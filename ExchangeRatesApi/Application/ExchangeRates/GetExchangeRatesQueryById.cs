@@ -2,9 +2,9 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
 using ExchangeRatesApi.Records;
-using System.Text.Json;
+using FluentValidation;
 
-namespace ExchangeRatesApi.Application;
+namespace ExchangeRatesApi.Application.ExchangeRates;
 
 public class GetExchangeRatesQueryById
 {
@@ -72,6 +72,16 @@ public class GetExchangeRatesQueryById
             
             return await fiscalResponse.Content.ReadFromJsonAsync<FiscalDataResponse>(cancellationToken: cancellationToken) 
                 ?? new FiscalDataResponse();
+        }
+    }
+
+    public class Validator : AbstractValidator<Query>
+    {
+        public Validator()
+        {
+            RuleFor(x => x.Id)
+                .GreaterThan(0)
+                .WithMessage("Id must be greater than 0");
         }
     }
 }

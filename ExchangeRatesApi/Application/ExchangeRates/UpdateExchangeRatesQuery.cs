@@ -3,19 +3,20 @@ using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
 using FluentValidation;
 
-namespace ExchangeRatesApi.Application;
+namespace ExchangeRatesApi.Application.ExchangeRates;
 
-public class CreateExchangeRatesQuery
+public class UpdateExchangeRatesQuery
 {
-    public class Command : IRequest<ExchangeRatesQuery>
+    public class Command : IRequest<Unit>
     {
+        public long Id { get; set; }
         public string? Name { get; set; }
         public string? CountryCurrency { get; set; }
         public DateTime? StartDate { get; set; }
         public DateTime? EndDate { get; set; }
     }
 
-    public class Handler : IRequestHandler<Command, ExchangeRatesQuery>
+    public class Handler : IRequestHandler<Command, Unit>
     {
         private readonly ExchangeRatesContext _context;
 
@@ -24,20 +25,41 @@ public class CreateExchangeRatesQuery
             _context = context;
         }
 
-        public async Task<ExchangeRatesQuery> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
         {
             var exchangeRatesQuery = new ExchangeRatesQuery
             {
+                Id = request.Id,
                 Name = request.Name,
                 CountryCurrency = request.CountryCurrency,
                 StartDate = request.StartDate,
                 EndDate = request.EndDate
             };
 
-            _context.ExchangeRatesQueries.Add(exchangeRatesQuery);
-            await _context.SaveChangesAsync(cancellationToken);
+            _context.Entry(exchangeRatesQuery).State = EntityState.Modified;
 
-            return exchangeRatesQuery;
+            try
+            {
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await ExchangeRatesQueryExists(request.Id, cancellationToken))
+                {
+                    throw new InvalidOperationException("Exchange rates query not found");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Unit.Value;
+        }
+
+        private async Task<bool> ExchangeRatesQueryExists(long id, CancellationToken cancellationToken)
+        {
+            return await _context.ExchangeRatesQueries.AnyAsync(e => e.Id == id, cancellationToken);
         }
     }
 
@@ -45,6 +67,10 @@ public class CreateExchangeRatesQuery
     {
         public Validator()
         {
+            RuleFor(x => x.Id)
+                .GreaterThan(0)
+                .WithMessage("Id must be greater than 0");
+
             RuleFor(x => x.Name)
                 .NotEmpty()
                 .WithMessage("Name is required");

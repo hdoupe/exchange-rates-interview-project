@@ -1,8 +1,9 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
+using FluentValidation;
 
-namespace ExchangeRatesApi.Application;
+namespace ExchangeRatesApi.Application.ExchangeRates;
 
 public class GetExchangeRatesQueries
 {
@@ -27,6 +28,14 @@ public class GetExchangeRatesQueries
             }
             
             return await _context.ExchangeRatesQueries.ToListAsync(cancellationToken);
+        }
+    }
+
+    public class Validator : AbstractValidator<Query>
+    {
+        public Validator()
+        {
+            // No validation needed for getting all queries
         }
     }
 }

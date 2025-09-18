@@ -1,8 +1,9 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
+using FluentValidation;
 
-namespace ExchangeRatesApi.Application;
+namespace ExchangeRatesApi.Application.ExchangeRates;
 
 public class DeleteExchangeRatesQuery
 {
@@ -38,6 +39,16 @@ public class DeleteExchangeRatesQuery
             await _context.SaveChangesAsync(cancellationToken);
 
             return Unit.Value;
+        }
+    }
+
+    public class Validator : AbstractValidator<Command>
+    {
+        public Validator()
+        {
+            RuleFor(x => x.Id)
+                .GreaterThan(0)
+                .WithMessage("Id must be greater than 0");
         }
     }
 }

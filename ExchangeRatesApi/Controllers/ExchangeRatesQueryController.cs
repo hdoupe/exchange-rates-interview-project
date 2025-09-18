@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using ExchangeRatesApi.Models;
 using ExchangeRatesApi.Records;
-using ExchangeRatesApi.Application;
+using ExchangeRatesApi.Application.ExchangeRates;
 
 
 namespace ExchangeRatesApi.Controllers

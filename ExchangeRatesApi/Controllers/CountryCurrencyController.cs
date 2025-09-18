@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using MediatR;
 using ExchangeRatesApi.Models;
+using ExchangeRatesApi.Application.CountryCurrency;
 
 namespace ExchangeRatesApi.Controllers
 {
@@ -13,22 +9,19 @@ namespace ExchangeRatesApi.Controllers
     [ApiController]
     public class CountryCurrencyController : ControllerBase
     {
-        private readonly ExchangeRatesContext _context;
+        private readonly IMediator _mediator;
 
-        public CountryCurrencyController(ExchangeRatesContext context)
+        public CountryCurrencyController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
         // GET: api/CountryCurrency
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Country>>> GetCountryCurrencies()
         {
-          if (_context.CountryCurrencies == null)
-          {
-              return NotFound();
-          }
-            return await _context.CountryCurrencies.ToListAsync();
+            var countries = await _mediator.Send(new GetCountryCurrencies.Query());
+            return Ok(countries);
         }
     }
 }

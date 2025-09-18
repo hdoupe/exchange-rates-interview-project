@@ -18,7 +18,7 @@ builder.Services.AddControllers();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
 
 // Add FluentValidation validators
-builder.Services.AddScoped<IValidator<ExchangeRatesApi.Application.CreateExchangeRatesQuery.Command>, ExchangeRatesApi.Application.CreateExchangeRatesQuery.Validator>();
+builder.Services.AddScoped<IValidator<ExchangeRatesApi.Application.ExchangeRates.CreateExchangeRatesQuery.Command>, ExchangeRatesApi.Application.ExchangeRates.CreateExchangeRatesQuery.Validator>();
 
 builder.Services.AddDbContext<ExchangeRatesContext>(opt => {
     opt.UseSqlite("ExchangeRatesQueries");
