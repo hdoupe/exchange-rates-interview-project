@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
+using MediatR;
+using System.Reflection;
+using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +13,13 @@ builder.Services.AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =
 }));
 
 builder.Services.AddControllers();
+
+// Add MediatR
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
+
+// Add FluentValidation validators
+builder.Services.AddScoped<IValidator<ExchangeRatesApi.Application.CreateExchangeRatesQuery.Command>, ExchangeRatesApi.Application.CreateExchangeRatesQuery.Validator>();
+
 builder.Services.AddDbContext<ExchangeRatesContext>(opt => {
     opt.UseSqlite("ExchangeRatesQueries");
     opt.UseSqlite("CountryCurrencies");
