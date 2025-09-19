@@ -36,21 +36,12 @@ public class UpdateExchangeRatesQuery
                 EndDate = request.EndDate
             };
 
-            try
+            if (!await _repository.ExistsAsync(request.Id, cancellationToken))
             {
-                await _repository.UpdateAsync(exchangeRatesQuery, cancellationToken);
+                throw new InvalidOperationException("Exchange rates query not found");
             }
-            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
-            {
-                if (!await _repository.ExistsAsync(request.Id, cancellationToken))
-                {
-                    throw new InvalidOperationException("Exchange rates query not found");
-                }
-                else
-                {
-                    throw;
-                }
-            }
+
+            await _repository.UpdateAsync(exchangeRatesQuery, cancellationToken);
 
             return Unit.Value;
         }
