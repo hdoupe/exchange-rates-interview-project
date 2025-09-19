@@ -4,9 +4,9 @@ namespace ExchangeRatesApi.Records;
 
 // Records for serializing and desrializing data from the fiscaldata API endpoint.
 public record FiscalDataResponse {
-    public List<ExchangeRate> data { get; set; }
-    public Meta meta { get; set; }
-    public Links links { get; set; }
+    public List<ExchangeRate>? data { get; set; }
+    public Meta? meta { get; set; }
+    public Links? links { get; set; }
 }
 
 public record ExchangeRate {
@@ -23,5 +23,5 @@ public record Meta {
 }
 
 public record Links {
-    public string next { get; set; }
+    public string? next { get; set; }
 }
