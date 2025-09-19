@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using MediatR;
 using ExchangeRatesApi.Models;
 using ExchangeRatesApi.Records;
+using ExchangeRatesApi.Application.ExchangeRates;
 
 
 namespace ExchangeRatesApi.Controllers
@@ -11,45 +12,19 @@ namespace ExchangeRatesApi.Controllers
     [ApiController]
     public class ExchangeRatesQueryController : ControllerBase
     {
-        private static HttpClient treasuryClient = new()
-        {
-            BaseAddress = new Uri("https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange"),
-        };
+        private readonly IMediator _mediator;
 
-        private readonly ExchangeRatesContext _context;
-
-        public ExchangeRatesQueryController(ExchangeRatesContext context)
+        public ExchangeRatesQueryController(IMediator mediator)
         {
-            _context = context;
+            _mediator = mediator;
         }
 
         // GET: api/ExchangeRatesQuery
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ExchangeRatesQuery>>> GetExchangeRatesQueries()
         {
-          if (_context.ExchangeRatesQueries == null)
-          {
-              return NotFound();
-          }
-            return await _context.ExchangeRatesQueries.ToListAsync();
-        }
-
-        // Query the fiscal data exchange rates endpoint and return parsed FiscalDataResponse object
-        private async Task<FiscalDataResponse> GetFiscalData(ExchangeRatesQuery query) {
-            string CountryCurrency = query.CountryCurrency;
-            var StartDate = query.StartDate;
-            var EndDate = query.EndDate;
-            var format = "yyyy-MM-dd";
-            var baseQuery = "fields=record_date,country,currency,country_currency_desc,exchange_rate&limit=200";
-            var queryString = "";
-            if (StartDate != null && EndDate != null) {
-                queryString = $"{baseQuery}&filter=country_currency_desc:in:({CountryCurrency}),record_date:gte:{StartDate.Value.ToString(format)},record_date:lte:{EndDate.Value.ToString(format)}";
-            } else {
-                queryString = $"{baseQuery}&filter=country_currency_desc:in:({CountryCurrency}),record_date:gte:{StartDate.Value.ToString(format)}";
-            }
-            System.Console.WriteLine($"Querying exchange rates api: {queryString}");
-            var fiscalResponse = await treasuryClient.GetAsync($"?{queryString}");
-            return await fiscalResponse.Content.ReadFromJsonAsync<FiscalDataResponse>();
+            var queries = await _mediator.Send(new GetExchangeRatesQueries.Query());
+            return Ok(queries);
         }
 
         // GET: api/ExchangeRatesQuery/5
@@ -57,73 +32,54 @@ namespace ExchangeRatesApi.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<ExchangeRatesResponse>> GetExchangeRatesQuery(long id)
         {
-          if (_context.ExchangeRatesQueries == null)
-          {
-              return NotFound();
-          }
-            var exchangeRatesQuery = await _context.ExchangeRatesQueries.FindAsync(id);
-
-            if (exchangeRatesQuery == null)
+            try
             {
-                return NotFound();
+                var result = await _mediator.Send(new GetExchangeRatesQueryById.Query { Id = id });
+                
+                if (result == null)
+                {
+                    return NotFound();
+                }
+                
+                return Ok(result);
             }
-            try {
-                // Retrieve the data from the fiscal data api endpoint and return query and response.
-                var result = await GetFiscalData(exchangeRatesQuery);
-                ExchangeRatesResponse response = new(exchangeRatesQuery, result);
-                return response;
-            } catch (HttpRequestException e) {
+            catch (HttpRequestException e)
+            {
                 System.Console.WriteLine(e.Message);
                 System.Console.WriteLine(e.TargetSite);
-                return BadRequest(new { message = "Fiscal Data API call was not successful", statusCode = e.StatusCode });
+                return BadRequest(new { message = "Fiscal Data API call was not successful", statusCode = e.Data["StatusCode"] });
             }
         }
 
         // PUT: api/ExchangeRatesQuery/5
         // Note: The put endpoint is currently not in use.
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutExchangeRatesQuery(long id, ExchangeRatesQuery exchangeRatesQuery)
+        public async Task<IActionResult> PutExchangeRatesQuery(long id, UpdateExchangeRatesQuery.Command command)
         {
-            if (id != exchangeRatesQuery.Id)
+            if (id != command.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(exchangeRatesQuery).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync();
+                await _mediator.Send(command);
+                return NoContent();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (InvalidOperationException)
             {
-                if (!ExchangeRatesQueryExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return NotFound();
             }
-
-            return NoContent();
         }
 
         // POST: api/ExchangeRatesQuery
         // Creates a new exchange rates query. Note this does not retrieve the actual query results since those are
         // retrieved after the user is redirected to the query results page.
         [HttpPost]
-        public async Task<ActionResult<ExchangeRatesQuery>> PostExchangeRatesQuery(ExchangeRatesQuery exchangeRatesQuery)
+        public async Task<ActionResult<ExchangeRatesQuery>> PostExchangeRatesQuery(CreateExchangeRatesQuery.Command command)
         {
-          if (_context.ExchangeRatesQueries == null)
-          {
-              return Problem("Entity set 'ExchangeRatesContext.ExchangeRatesQueries'  is null.");
-          }
-            _context.ExchangeRatesQueries.Add(exchangeRatesQuery);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetExchangeRatesQuery", new { id = exchangeRatesQuery.Id }, exchangeRatesQuery);
+            var result = await _mediator.Send(command);
+            return CreatedAtAction("GetExchangeRatesQuery", new { id = result.Id }, result);
         }
 
         // DELETE: api/ExchangeRatesQuery/5
@@ -131,25 +87,15 @@ namespace ExchangeRatesApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteExchangeRatesQuery(long id)
         {
-            if (_context.ExchangeRatesQueries == null)
+            try
+            {
+                await _mediator.Send(new DeleteExchangeRatesQuery.Command { Id = id });
+                return NoContent();
+            }
+            catch (InvalidOperationException)
             {
                 return NotFound();
             }
-            var exchangeRatesQuery = await _context.ExchangeRatesQueries.FindAsync(id);
-            if (exchangeRatesQuery == null)
-            {
-                return NotFound();
-            }
-
-            _context.ExchangeRatesQueries.Remove(exchangeRatesQuery);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool ExchangeRatesQueryExists(long id)
-        {
-            return (_context.ExchangeRatesQueries?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
