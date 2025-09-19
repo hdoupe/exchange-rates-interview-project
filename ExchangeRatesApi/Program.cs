@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
+using ExchangeRatesApi.Repositories;
 using MediatR;
 using System.Reflection;
 using FluentValidation;
@@ -24,6 +25,10 @@ builder.Services.AddDbContext<ExchangeRatesContext>(opt => {
     opt.UseSqlite("ExchangeRatesQueries");
     opt.UseSqlite("CountryCurrencies");
 });
+
+// Add repositories
+builder.Services.AddScoped<IExchangeRatesQueryRepository, ExchangeRatesQueryRepository>();
+builder.Services.AddScoped<ICountryRepository, CountryRepository>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

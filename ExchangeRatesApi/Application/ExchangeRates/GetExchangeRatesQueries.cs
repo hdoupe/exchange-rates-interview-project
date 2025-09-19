@@ -1,6 +1,6 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
+using ExchangeRatesApi.Repositories;
 using FluentValidation;
 
 namespace ExchangeRatesApi.Application.ExchangeRates;
@@ -13,21 +13,16 @@ public class GetExchangeRatesQueries
 
     public class Handler : IRequestHandler<Query, IEnumerable<ExchangeRatesQuery>>
     {
-        private readonly ExchangeRatesContext _context;
+        private readonly IExchangeRatesQueryRepository _repository;
 
-        public Handler(ExchangeRatesContext context)
+        public Handler(IExchangeRatesQueryRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<ExchangeRatesQuery>> Handle(Query request, CancellationToken cancellationToken)
         {
-            if (_context.ExchangeRatesQueries == null)
-            {
-                return Enumerable.Empty<ExchangeRatesQuery>();
-            }
-            
-            return await _context.ExchangeRatesQueries.ToListAsync(cancellationToken);
+            return await _repository.GetAllAsync(cancellationToken);
         }
     }
 

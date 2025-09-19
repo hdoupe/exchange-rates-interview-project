@@ -1,7 +1,7 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
 using ExchangeRatesApi.Records;
+using ExchangeRatesApi.Repositories;
 using FluentValidation;
 
 namespace ExchangeRatesApi.Application.ExchangeRates;
@@ -15,25 +15,20 @@ public class GetExchangeRatesQueryById
 
     public class Handler : IRequestHandler<Query, ExchangeRatesResponse?>
     {
-        private readonly ExchangeRatesContext _context;
+        private readonly IExchangeRatesQueryRepository _repository;
         private static readonly HttpClient TreasuryClient = new()
         {
             BaseAddress = new Uri("https://api.fiscaldata.treasury.gov/services/api/fiscal_service/v1/accounting/od/rates_of_exchange"),
         };
 
-        public Handler(ExchangeRatesContext context)
+        public Handler(IExchangeRatesQueryRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<ExchangeRatesResponse?> Handle(Query request, CancellationToken cancellationToken)
         {
-            if (_context.ExchangeRatesQueries == null)
-            {
-                return null;
-            }
-
-            var exchangeRatesQuery = await _context.ExchangeRatesQueries.FindAsync(new object[] { request.Id }, cancellationToken);
+            var exchangeRatesQuery = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
             if (exchangeRatesQuery == null)
             {
