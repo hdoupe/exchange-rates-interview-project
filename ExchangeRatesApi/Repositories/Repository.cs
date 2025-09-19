@@ -30,20 +30,22 @@ public class Repository<T> : IRepository<T> where T : class
         return await _dbSet.Where(predicate).ToListAsync(cancellationToken);
     }
 
-    public virtual async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
+    public virtual Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
     {
         _dbSet.Add(entity);
-        return entity;
+        return Task.FromResult(entity);
     }
 
-    public virtual async Task UpdateAsync(T entity, CancellationToken cancellationToken = default)
+    public virtual Task UpdateAsync(T entity, CancellationToken cancellationToken = default)
     {
         _context.Entry(entity).State = EntityState.Modified;
+        return Task.CompletedTask;
     }
 
-    public virtual async Task DeleteAsync(T entity, CancellationToken cancellationToken = default)
+    public virtual Task DeleteAsync(T entity, CancellationToken cancellationToken = default)
     {
         _dbSet.Remove(entity);
+        return Task.CompletedTask;
     }
 
     public virtual async Task<bool> ExistsAsync(long id, CancellationToken cancellationToken = default)
