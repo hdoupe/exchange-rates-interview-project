@@ -1,6 +1,6 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
+using ExchangeRatesApi.Repositories;
 using FluentValidation;
 
 namespace ExchangeRatesApi.Application.ExchangeRates;
@@ -18,11 +18,11 @@ public class UpdateExchangeRatesQuery
 
     public class Handler : IRequestHandler<Command, Unit>
     {
-        private readonly ExchangeRatesContext _context;
+        private readonly IExchangeRatesQueryRepository _repository;
 
-        public Handler(ExchangeRatesContext context)
+        public Handler(IExchangeRatesQueryRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<Unit> Handle(Command request, CancellationToken cancellationToken)
@@ -36,15 +36,13 @@ public class UpdateExchangeRatesQuery
                 EndDate = request.EndDate
             };
 
-            _context.Entry(exchangeRatesQuery).State = EntityState.Modified;
-
             try
             {
-                await _context.SaveChangesAsync(cancellationToken);
+                await _repository.UpdateAsync(exchangeRatesQuery, cancellationToken);
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException)
             {
-                if (!await ExchangeRatesQueryExists(request.Id, cancellationToken))
+                if (!await _repository.ExistsAsync(request.Id, cancellationToken))
                 {
                     throw new InvalidOperationException("Exchange rates query not found");
                 }
@@ -55,11 +53,6 @@ public class UpdateExchangeRatesQuery
             }
 
             return Unit.Value;
-        }
-
-        private async Task<bool> ExchangeRatesQueryExists(long id, CancellationToken cancellationToken)
-        {
-            return await _context.ExchangeRatesQueries.AnyAsync(e => e.Id == id, cancellationToken);
         }
     }
 

@@ -1,6 +1,6 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using ExchangeRatesApi.Models;
+using ExchangeRatesApi.Repositories;
 using FluentValidation;
 
 namespace ExchangeRatesApi.Application.CountryCurrency;
@@ -13,21 +13,16 @@ public class GetCountryCurrencies
 
     public class Handler : IRequestHandler<Query, IEnumerable<Country>>
     {
-        private readonly ExchangeRatesContext _context;
+        private readonly ICountryRepository _repository;
 
-        public Handler(ExchangeRatesContext context)
+        public Handler(ICountryRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<IEnumerable<Country>> Handle(Query request, CancellationToken cancellationToken)
         {
-            if (_context.CountryCurrencies == null)
-            {
-                return Enumerable.Empty<Country>();
-            }
-
-            return await _context.CountryCurrencies.ToListAsync(cancellationToken);
+            return await _repository.GetAllAsync(cancellationToken);
         }
     }
 
