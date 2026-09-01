@@ -21,7 +21,7 @@ export const Sidebar = ({ queries }: Props) => {
   return (
     <Card className="p-3 border-0">
       {queries.map(query => (
-        <Row>
+        <Row key={query.id}>
           <Col>
             <a href={`${query.id}`}><p className="font-weight-bold">{query.name} - {query.countryCurrency}</p></a>
             <p className="font-weight-light">

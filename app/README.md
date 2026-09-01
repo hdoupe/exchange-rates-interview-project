@@ -2,26 +2,41 @@
 
 This project contains the frontend application code for an exchange rates app.
 
+It is built with [React](https://react.dev/) 19, [TypeScript](https://www.typescriptlang.org/) 5
+and [Vite](https://vite.dev/).
+
 ## Getting started
 
 ### `npm install`
 
-Install required packages.
+Install required packages. Requires Node.js 20.19+ or 22.12+.
 
-### `npm start`
+### `npm run dev`
 
-Runs the app in the development mode.\
+Runs the app in development mode.\
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+The page will hot-reload as you make edits.
+
+(`npm start` is kept as an alias for the same thing.)
 
 ### `npm run build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Type-checks the project and builds it for production to the `dist` folder.\
+The build is minified and the filenames include content hashes.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Use `npm run preview` to serve the production build locally.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+### `npm test`
+
+Runs the test suite with [Vitest](https://vitest.dev/) in watch mode.\
+Use `npx vitest run` for a single non-watching run.
+
+### `npm run lint`
+
+Lints the project with ESLint.
+
+## Configuration
+
+The API base URL is read from `VITE_BASE_URL` in [.env](.env). Vite only exposes
+environment variables prefixed with `VITE_` to the client.
