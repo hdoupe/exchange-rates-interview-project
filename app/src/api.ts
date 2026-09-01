@@ -1,10 +1,10 @@
 import axios, { AxiosResponse } from "axios"
 import { ExchangeRatesQuery, QueryResult } from "./types";
 
-console.log('BASE', process.env.REACT_APP_BASE_URL);
+console.log('BASE', import.meta.env.VITE_BASE_URL);
 
 const client = axios.create({
-    baseURL: process.env.REACT_APP_BASE_URL,
+    baseURL: import.meta.env.VITE_BASE_URL,
     timeout: 5000,
 });
 

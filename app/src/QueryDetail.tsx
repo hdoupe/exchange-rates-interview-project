@@ -29,8 +29,12 @@ export const QueryDetail = ({ queryResult }: Props) => {
             </tr>
           </thead>
           <tbody>
-            {response.data.map(exchangeRate => (
-              <tr>
+            {response.data.map((exchangeRate, index) => (
+              // The API can return several rows for the same record_date, so
+              // there is no stable unique id to key on. This list is rendered
+              // straight from the response and never reordered, so the index
+              // is safe here.
+              <tr key={index}>
                 <td>{formatDate(exchangeRate.record_date)}</td>
                 <td>{exchangeRate.exchange_rate}</td>
               </tr>

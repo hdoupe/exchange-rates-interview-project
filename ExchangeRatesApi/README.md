@@ -1,5 +1,7 @@
 # Exchange Rates API
 
+This project targets [.NET 10 (LTS)](https://dotnet.microsoft.com/en-us/download/dotnet/10.0).
+
 ## Run the API Server
 
 ### Visual Studio
@@ -31,7 +33,7 @@ dotnet ef database update
 ## Extra Resources
 
 Here are some resources that were helpful for implementing the API:
-- https://learn.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-7.0&tabs=visual-studio-code
-- https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/complex-data-model?view=aspnetcore-7.0
+- https://learn.microsoft.com/en-us/aspnet/core/tutorials/first-web-api?view=aspnetcore-10.0&tabs=visual-studio-code
+- https://learn.microsoft.com/en-us/aspnet/core/data/ef-mvc/complex-data-model?view=aspnetcore-10.0
 - https://learn.microsoft.com/en-us/dotnet/fundamentals/networking/http/httpclient
 - https://learn.microsoft.com/en-us/ef/core/get-started/overview/first-app?tabs=netcore-cli
