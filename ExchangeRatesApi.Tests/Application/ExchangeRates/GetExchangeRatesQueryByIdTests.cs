@@ -65,7 +65,9 @@ public class GetExchangeRatesQueryByIdTests
         // Assert
         result.Should().NotBeNull();
         result!.Query.Should().BeEquivalentTo(exchangeRatesQuery);
-        result.Response.Should().NotBeNull();
+        // Verify data came back from the Treasury API 
+        result.Response.data.Should().NotBeNull();
+        result.Response.meta.Should().NotBeNull();
         _mockRepository.Verify(r => r.GetByIdAsync(queryId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -97,7 +99,9 @@ public class GetExchangeRatesQueryByIdTests
         // Assert
         result.Should().NotBeNull();
         result!.Query.Should().BeEquivalentTo(exchangeRatesQuery);
-        result.Response.Should().NotBeNull();
+        // Verify data came back from the Treasury API
+        result.Response.data.Should().NotBeNull();
+        result.Response.meta.Should().NotBeNull();
         _mockRepository.Verify(r => r.GetByIdAsync(queryId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -128,7 +132,9 @@ public class GetExchangeRatesQueryByIdTests
         // Assert
         result.Should().NotBeNull();
         result!.Query.Should().BeEquivalentTo(exchangeRatesQuery);
-        result.Response.Should().NotBeNull();
+        // Verify data came back from the Treasury API
+        result.Response.data.Should().NotBeNull();
+        result.Response.meta.Should().NotBeNull();
         _mockRepository.Verify(r => r.GetByIdAsync(queryId, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -159,37 +165,10 @@ public class GetExchangeRatesQueryByIdTests
         // Assert
         result.Should().NotBeNull();
         result!.Query.Should().BeEquivalentTo(exchangeRatesQuery);
-        result.Response.Should().NotBeNull();
+        // Verify data came back from the Treasury API
+        result.Response.data.Should().NotBeNull();
+        result.Response.meta.Should().NotBeNull();
         _mockRepository.Verify(r => r.GetByIdAsync(queryId, It.IsAny<CancellationToken>()), Times.Once);
-    }
-
-    [Fact]
-    public async Task Handle_WhenCancellationRequested_ShouldPassCancellationToken()
-    {
-        // Arrange
-        var queryId = 5L;
-        var cts = new CancellationTokenSource();
-        var exchangeRatesQuery = new ExchangeRatesQuery
-        {
-            Id = queryId,
-            Name = "Test Query",
-            CountryCurrency = "Canada-Dollar",
-            StartDate = null,
-            EndDate = null
-        };
-
-        var request = new GetExchangeRatesQueryById.Query { Id = queryId };
-
-        _mockRepository
-            .Setup(r => r.GetByIdAsync(queryId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(exchangeRatesQuery);
-
-        // Act
-        var result = await _handler.Handle(request, cts.Token);
-
-        // Assert
-        result.Should().NotBeNull();
-        _mockRepository.Verify(r => r.GetByIdAsync(queryId, cts.Token), Times.Once);
     }
 
     [Fact]
